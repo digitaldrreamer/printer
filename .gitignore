@@ -1,0 +1,47 @@
+node_modules/
+.npm/
+.pnpm-store/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts / coverage
+build/
+dist/
+coverage/
+.vite/
+.svelte-kit/
+
+# Caches
+.cache/
+.tmp/
+.temporary/
+
+# Puppeteer/Chrome caches
+.puppeteer/
+.chrome/
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# PIDs
+*.pid
+
+# Misc
+*.swp
+*.swo

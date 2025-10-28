@@ -1,0 +1,18 @@
+{
+    "name": "printer-pdf-service",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "description": "Lightweight Puppeteer-based PDF rendering microservice",
+    "scripts": {
+        "start": "node pdf-service.js",
+        "dev": "PDF_SERVICE_PORT=3002 node pdf-service.js"
+    },
+    "dependencies": {
+        "express": "^5.1.0",
+        "puppeteer": "^24.20.0"
+    },
+    "engines": {
+        "node": ">=18.17"
+    }
+}
