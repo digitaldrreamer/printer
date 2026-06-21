@@ -168,6 +168,11 @@ app.get("/pdf", async (req, res) => {
       const preferCSSPageSize = parseBool(req.query.preferCSSPageSize, false)
       const tagged = parseBool(req.query.tagged, true)
       const outline = parseBool(req.query.outline, false)
+      // HTML template rendered in the paper margin zone — cannot strand on blank pages
+      const footerTemplate = typeof req.query.footerTemplate === 'string' ? req.query.footerTemplate : undefined
+      const headerTemplate = typeof req.query.headerTemplate === 'string' ? req.query.headerTemplate : undefined
+      // Wait for a CSS selector to be present before printing (e.g. 'html.ready')
+      const readySelector = typeof req.query.readySelector === 'string' ? req.query.readySelector : undefined
 
       console.log("PDF Service: Launching Puppeteer with bundled Chrome for Testing")
 
@@ -207,6 +212,14 @@ app.get("/pdf", async (req, res) => {
         timeout: timeoutMs,
       })
 
+      if (readySelector) {
+        try {
+          await page.waitForSelector(readySelector, { timeout: Math.min(timeoutMs, 15000) })
+        } catch {
+          console.warn(`PDF Service: readySelector "${readySelector}" timed out, proceeding`)
+        }
+      }
+
       await new Promise((r) => setTimeout(r, 750))
 
       const pdfBuffer = await page.pdf({
@@ -214,7 +227,9 @@ app.get("/pdf", async (req, res) => {
         orientation,
         margin: margins,
         scale,
-        displayHeaderFooter,
+        displayHeaderFooter: displayHeaderFooter || !!(footerTemplate || headerTemplate),
+        ...(footerTemplate !== undefined ? { footerTemplate } : {}),
+        ...(headerTemplate !== undefined ? { headerTemplate } : {}),
         printBackground,
         preferCSSPageSize,
         tagged,
@@ -330,6 +345,9 @@ app.get("/openapi.json", (req, res) => {
             { name: "preferCSSPageSize", in: "query", required: false, schema: { type: "boolean", default: false, example: false }, description: "Whether to prefer CSS page size over format option" },
             { name: "tagged", in: "query", required: false, schema: { type: "boolean", default: true, example: true }, description: "Whether to generate tagged PDF for accessibility" },
             { name: "outline", in: "query", required: false, schema: { type: "boolean", default: false, example: false }, description: "Whether to generate PDF outline/bookmarks" },
+            { name: "footerTemplate", in: "query", required: false, schema: { type: "string" }, description: "HTML template for the page footer (rendered in the bottom paper margin). Use <span class=\"pageNumber\"> and <span class=\"totalPages\"> for page numbers. Requires marginBottom to reserve space." },
+            { name: "headerTemplate", in: "query", required: false, schema: { type: "string" }, description: "HTML template for the page header (rendered in the top paper margin). Requires marginTop to reserve space." },
+            { name: "readySelector", in: "query", required: false, schema: { type: "string" }, description: "CSS selector to wait for before printing (e.g. 'html.ready'). Waits up to 15 seconds." },
           ],
           responses: {
             "200": {
